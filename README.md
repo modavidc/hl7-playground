@@ -20,7 +20,9 @@ HL7 v2 is common in healthcare integrations, but its compact segment format make
 
 ## Try it
 
-The planned [GitHub Pages demo](https://modavidc.github.io/hl7-playground/) will be available after the repository is published and Pages is set to **GitHub Actions**. Until then, run it locally:
+Try the [live GitHub Pages demo](https://modavidc.github.io/hl7-playground/). Every push to `main` runs the parser checks, builds the static site, and deploys the `dist` output.
+
+Run it locally:
 
 ```sh
 npm ci
