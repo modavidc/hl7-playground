@@ -1,0 +1,13 @@
+{
+  "name": "hl7-playground",
+  "description": "A browser-based HL7 v2 message explorer with field explanations and basic validation.",
+  "author": "modavidc",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "scripts": { "dev": "vite", "build": "tsc -b && vite build", "preview": "vite preview", "test": "node --test" },
+  "homepage": "https://modavidc.github.io/hl7-playground/",
+  "repository": { "type": "git", "url": "https://github.com/modavidc/hl7-playground.git" },
+  "devDependencies": { "typescript": "^5.7.3", "vite": "^6.0.7" }
+}
