@@ -8,8 +8,40 @@ const defaultDelimiters: Delimiters = {
   subcomponent: '&'
 };
 
-function getSegments(input: string): string[] {
-  return input.split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
+export const MAX_MESSAGE_CHARACTERS = 512_000;
+export const MAX_SEGMENTS = 500;
+
+interface SourceLine {
+  raw: string;
+  lineNumber: number;
+}
+
+function getSegments(input: string): SourceLine[] | null {
+  const segments: SourceLine[] = [];
+  let start = 0;
+  let lineNumber = 1;
+
+  for (let index = 0; index <= input.length; index++) {
+    if (index < input.length && input[index] !== '\r' && input[index] !== '\n') continue;
+
+    const raw = input.slice(start, index);
+    if (raw.trim()) {
+      segments.push({ raw, lineNumber });
+      if (segments.length > MAX_SEGMENTS) return null;
+    }
+
+    if (index === input.length) break;
+    if (input[index] === '\r' && input[index + 1] === '\n') index++;
+    start = index + 1;
+    lineNumber++;
+  }
+
+  return segments;
+}
+
+export function countSegments(input: string): number {
+  if (input.length > MAX_MESSAGE_CHARACTERS) return MAX_SEGMENTS + 1;
+  return getSegments(input)?.length ?? MAX_SEGMENTS + 1;
 }
 
 function getDelimiters(header: string): Delimiters {
@@ -25,10 +57,18 @@ function getDelimiters(header: string): Delimiters {
 }
 
 export function parseMessage(input: string): Hl7Message {
-  const lines = getSegments(input);
-  const delimiters = getDelimiters(lines[0] ?? '');
+  if (input.length > MAX_MESSAGE_CHARACTERS) {
+    return { segments: [], delimiters: { ...defaultDelimiters }, limitExceeded: 'characters' };
+  }
 
-  const segments = lines.map((raw, index): Hl7Segment => {
+  const lines = getSegments(input);
+  if (!lines) {
+    return { segments: [], delimiters: { ...defaultDelimiters }, limitExceeded: 'segments' };
+  }
+
+  const delimiters = getDelimiters(lines[0]?.raw ?? '');
+
+  const segments = lines.map(({ raw, lineNumber }, index): Hl7Segment => {
     const name = raw.slice(0, 3);
     const values = raw.split(delimiters.field);
     // MSH-1 and MSH-2 are encoded in the header itself, before ordinary fields begin.
@@ -49,7 +89,7 @@ export function parseMessage(input: string): Hl7Message {
       };
     });
 
-    return { name, raw, fields, index: index + 1 };
+    return { name, raw, fields, index: index + 1, lineNumber };
   });
 
   return { segments, delimiters };
@@ -71,15 +111,24 @@ function issue(
 }
 
 export function validateMessage(input: string, message: Hl7Message): Issue[] {
+  if (input.length > MAX_MESSAGE_CHARACTERS) {
+    return [issue('error', 'Message exceeds the size limit', `The maximum supported message size is ${MAX_MESSAGE_CHARACTERS.toLocaleString('en-US')} characters.`)];
+  }
+
   if (!input.trim()) {
     return [issue('error', 'Message is empty', 'Paste an HL7 v2 message to get started.')];
   }
 
   const issues: Issue[] = [];
   const lines = getSegments(input);
-  const firstLine = lines[0] ?? '';
+  if (!lines) {
+    return [issue('error', 'Message has too many segments', `The maximum supported message contains ${MAX_SEGMENTS.toLocaleString('en-US')} non-empty segments.`)];
+  }
+
+  const firstLine = lines[0]?.raw ?? '';
   const hasMshFirst = firstLine.slice(0, 3) === 'MSH';
-  const msh = lines.find(line => line.slice(0, 3) === 'MSH');
+  const mshLine = lines.find(line => line.raw.slice(0, 3) === 'MSH');
+  const msh = mshLine?.raw;
 
   if (!hasMshFirst) {
     issues.push(issue('error', 'MSH must be the first segment', 'Every HL7 v2 message starts with a message header (MSH).'));
@@ -103,15 +152,15 @@ export function validateMessage(input: string, message: Hl7Message): Issue[] {
       issues.push(issue('error', 'MSH delimiters are invalid', 'MSH-1 must be followed by four distinct encoding characters in MSH-2.', 'MSH-1/2'));
     }
 
-    const laterMsh = lines.findIndex((line, index) => index > 0 && line.slice(0, 3) === 'MSH');
-    if (laterMsh >= 0) {
-      issues.push(issue('error', 'Unexpected MSH segment', `A second MSH header appears on line ${laterMsh + 1}.`, `line ${laterMsh + 1}`));
+    const laterMsh = lines.find((line, index) => index > 0 && line.raw.slice(0, 3) === 'MSH');
+    if (laterMsh) {
+      issues.push(issue('error', 'Unexpected MSH segment', `A second MSH header appears on line ${laterMsh.lineNumber}.`, `line ${laterMsh.lineNumber}`));
     }
   }
 
   const fieldSeparator = message.delimiters.field || defaultDelimiters.field;
   for (const segment of message.segments) {
-    const location = `line ${segment.index}`;
+    const location = `line ${segment.lineNumber}`;
     if (!/^[A-Z0-9]{3}$/.test(segment.name)) {
       issues.push(issue('error', 'Invalid segment name', `“${segment.name || segment.raw}” is not a three-character segment name.`, location));
       continue;

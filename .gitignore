@@ -1,6 +1,9 @@
 node_modules/
 dist/
 .vite/
+.playwright/
+playwright-report/
+test-results/
 .edge-profile*/
 examples/*.hl7
 screenshots/hl7-playground-mobile.png

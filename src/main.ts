@@ -1,15 +1,8 @@
 import { examples } from './examples';
-import { getFieldDefinition, parseMessage, segmentDescriptions, validateMessage } from './parser';
+import { escapeHtml } from './html';
+import { countSegments, getFieldDefinition, MAX_MESSAGE_CHARACTERS, MAX_SEGMENTS, parseMessage, segmentDescriptions, validateMessage } from './parser';
 import type { Hl7Field, Hl7Message } from './types';
 import './styles.css';
-
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => ({
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;'
-})[char]!);
 
 const icons = {
   code: '<svg viewBox="0 0 24 24"><path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></svg>',
@@ -20,6 +13,7 @@ const icons = {
 };
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+const announcements = document.querySelector<HTMLDivElement>('#announcements')!;
 let selectedExample = 0;
 let input = examples[0].message;
 let parsed = parseMessage(input);
@@ -28,6 +22,65 @@ let expandedSegments: Set<number> | null = null;
 let expandedFields = new Set<string>();
 let hasPendingEdits = false;
 let copyMessage = '';
+
+type FocusTarget =
+  | { id: string }
+  | { attribute: 'data-example' | 'data-segment' | 'data-field'; value: string };
+
+function captureFocusTarget(): FocusTarget | null {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLElement) || !app.contains(activeElement)) return null;
+  if (activeElement.id) return { id: activeElement.id };
+
+  for (const attribute of ['data-example', 'data-segment', 'data-field'] as const) {
+    const value = activeElement.getAttribute(attribute);
+    if (value !== null) return { attribute, value };
+  }
+
+  return null;
+}
+
+function restoreFocusTarget(target: FocusTarget | null): void {
+  if (!target) return;
+  const element = 'id' in target
+    ? app.querySelector<HTMLElement>(`#${target.id}`)
+    : Array.from(app.querySelectorAll<HTMLElement>(`[${target.attribute}]`))
+      .find(candidate => candidate.getAttribute(target.attribute) === target.value) ?? null;
+  element?.focus({ preventScroll: true });
+}
+
+function renderLineNumbers(value: string): string {
+  const numbers: string[] = [];
+  let lineNumber = 1;
+  for (let index = 0; index <= value.length; index++) {
+    if (index < value.length && value[index] !== '\r' && value[index] !== '\n') continue;
+    if (lineNumber > MAX_SEGMENTS) {
+      numbers.push('<span aria-label="More lines">…</span>');
+      break;
+    }
+    numbers.push(`<span>${String(lineNumber).padStart(2, '0')}</span>`);
+    if (index === value.length) break;
+    if (value[index] === '\r' && value[index + 1] === '\n') index++;
+    lineNumber++;
+  }
+
+  return numbers.join('');
+}
+
+function announceOutcome(action: string): void {
+  const errorCount = issues.filter(item => item.severity === 'error').length;
+  const warningCount = issues.filter(item => item.severity === 'warning').length;
+  if (!errorCount && !warningCount) {
+    announcements.textContent = `${action}. ${parsed.segments.length} segments parsed with no basic structure issues.`;
+    return;
+  }
+
+  const counts = [
+    errorCount ? `${errorCount} error${errorCount === 1 ? '' : 's'}` : '',
+    warningCount ? `${warningCount} warning${warningCount === 1 ? '' : 's'}` : ''
+  ].filter(Boolean).join(' and ');
+  announcements.textContent = `${action}. Validation found ${counts}. Review the Validation panel for details.`;
+}
 
 function isStructured(field: Hl7Field): boolean {
   return field.repetitions.length > 1 || field.repetitions.some(components =>
@@ -44,9 +97,9 @@ function renderValueTree(segmentName: string, field: Hl7Field): string {
       const componentPath = `${segmentName}-${field.index}.${componentIndex + 1}`;
       const value = subcomponents.join(' & ') || '—';
       const childRows = subcomponents.length > 1
-        ? `<div class="subcomponent-list">${subcomponents.map((part, subcomponentIndex) => `<div class="subcomponent-row"><code>${componentPath}.${subcomponentIndex + 1}</code><span>${escapeHtml(part || '—')}</span></div>`).join('')}</div>`
+        ? `<div class="subcomponent-list">${subcomponents.map((part, subcomponentIndex) => `<div class="subcomponent-row"><code>${escapeHtml(`${componentPath}.${subcomponentIndex + 1}`)}</code><span>${escapeHtml(part || '—')}</span></div>`).join('')}</div>`
         : '';
-      return `<div class="component-row"><code>${componentPath}</code><span>${escapeHtml(value)}</span></div>${childRows}`;
+      return `<div class="component-row"><code>${escapeHtml(componentPath)}</code><span>${escapeHtml(value)}</span></div>${childRows}`;
     }).join('');
 
     return `<div class="repetition-group">${repetitionLabel}${componentRows}</div>`;
@@ -57,6 +110,7 @@ function renderField(segmentName: string, field: Hl7Field): string {
   const fieldKey = `${segmentName}-${field.index}`;
   const definition = getFieldDefinition(segmentName, field.index);
   const expanded = expandedFields.has(fieldKey);
+  const fieldKeyHtml = escapeHtml(fieldKey);
   const structure = isStructured(field);
   const hint = structure
     ? `${field.repetitions.length} rep${field.repetitions.length === 1 ? '' : 's'} · ${field.repetitions[0].length} comp`
@@ -64,8 +118,8 @@ function renderField(segmentName: string, field: Hl7Field): string {
 
   return `<div class="field-group">
     <div class="field-row">
-      <span class="field-index">${fieldKey}</span>
-      <button class="field-label-button" data-field="${fieldKey}" aria-expanded="${expanded}" aria-label="Explain ${fieldKey}: ${escapeHtml(definition.name)}">
+      <span class="field-index">${fieldKeyHtml}</span>
+      <button class="field-label-button" data-field="${fieldKeyHtml}" aria-expanded="${expanded}" aria-label="Explain ${fieldKeyHtml}: ${escapeHtml(definition.name)}">
         <span class="field-label">${escapeHtml(definition.name)}</span><span class="info-mark" aria-hidden="true">i</span>
       </button>
       <span class="field-value ${field.value ? '' : 'empty'}">${escapeHtml(field.value || '—')}</span>
@@ -90,6 +144,7 @@ function renderSegment(segment: Hl7Message['segments'][number]): string {
 }
 
 function render() {
+  const focusTarget = captureFocusTarget();
   const messageType = parsed.segments[0]?.fields.find(field => field.index === 9)?.value
     .split(parsed.delimiters.component).join(' ^ ') || 'HL7 MESSAGE';
   const errorCount = issues.filter(item => item.severity === 'error').length;
@@ -99,6 +154,17 @@ function render() {
     : warningCount
       ? `${warningCount} warning${warningCount === 1 ? '' : 's'}`
       : 'All clear';
+  const segmentCount = countSegments(input);
+  const inputSummary = input.length > MAX_MESSAGE_CHARACTERS
+    ? 'Character limit exceeded'
+    : segmentCount > MAX_SEGMENTS
+      ? `More than ${MAX_SEGMENTS.toLocaleString('en-US')} segments`
+      : `${segmentCount} segments`;
+  const emptyState = parsed.limitExceeded === 'characters'
+    ? 'Message exceeds the 512,000 character limit.'
+    : parsed.limitExceeded === 'segments'
+      ? `Message exceeds the ${MAX_SEGMENTS.toLocaleString('en-US')} segment limit.`
+      : 'Your parsed message will appear here.';
 
   app.innerHTML = `
     <header class="topbar">
@@ -112,23 +178,25 @@ function render() {
       <section class="workbench" aria-label="HL7 message workspace">
         <div class="panel editor-panel">
           <div class="panel-heading"><div><span class="panel-icon editor-icon">${icons.code}</span><span class="panel-title">Message input</span><span class="panel-subtitle">HL7 v2</span></div><button class="text-button" id="clear">Clear</button></div>
-          <div class="editor-wrap"><div class="line-numbers" aria-hidden="true">${input.split(/\r\n?|\n/).map((_, index) => `<span>${String(index + 1).padStart(2, '0')}</span>`).join('')}</div><textarea id="message" spellcheck="false" aria-label="HL7 v2 message input">${escapeHtml(input)}</textarea></div>
-          <div class="editor-footer"><span><span class="live-dot"></span> Runs locally in your browser</span><span>${input.split(/\r\n?|\n/).filter(line => line.trim()).length} segments</span></div>
+          <div class="editor-wrap"><div class="line-numbers" aria-hidden="true">${renderLineNumbers(input)}</div><textarea id="message" spellcheck="false" aria-label="HL7 v2 message input" aria-describedby="input-summary">${escapeHtml(input)}</textarea></div>
+          <div class="editor-footer"><span><span class="live-dot"></span> Runs locally in your browser</span><span id="input-summary" title="Maximum ${MAX_MESSAGE_CHARACTERS.toLocaleString('en-US')} characters or ${MAX_SEGMENTS.toLocaleString('en-US')} segments">${inputSummary}</span></div>
           <button class="parse-button" id="parse">${icons.parse}<span>Parse message</span><kbd>Ctrl / ⌘ ↵</kbd></button>
         </div>
         <div class="panel results-panel">
           <div class="panel-heading results-heading"><div><span class="panel-icon result-icon">${icons.parse}</span><span class="panel-title">Parsed structure</span></div><button class="icon-button" id="copy" aria-label="Copy parsed JSON">${icons.copy}</button></div>
           <div class="result-meta"><span class="message-pill">${escapeHtml(messageType)}</span><span class="meta-count">${parsed.segments.length} segments</span></div>
           <div class="stale-indicator" role="status" ${hasPendingEdits ? '' : 'hidden'}>The input changed. Parse again to refresh these results.</div>
-          <div class="tree" id="tree">${parsed.segments.length ? parsed.segments.map(renderSegment).join('') : '<div class="empty-state">Your parsed message will appear here.</div>'}</div>
-          <div class="validation">
-            <div class="validation-title"><span class="panel-icon validation-icon">${icons.shield}</span><span>Validation</span><span class="validation-count ${errorCount ? 'has-error' : warningCount ? 'has-warning' : ''}">${validationLabel}</span></div>
+          <div class="tree" id="tree">${parsed.segments.length ? parsed.segments.map(renderSegment).join('') : `<div class="empty-state">${emptyState}</div>`}</div>
+          <section class="validation" aria-labelledby="validation-heading">
+            <div class="validation-title" id="validation-heading"><span class="panel-icon validation-icon">${icons.shield}</span><span>Validation</span><span class="validation-count ${errorCount ? 'has-error' : warningCount ? 'has-warning' : ''}">${validationLabel}</span></div>
             ${issues.length ? issues.map(item => `<div class="issue ${item.severity}"><span class="issue-symbol" aria-hidden="true">${item.severity === 'error' ? '!' : '△'}</span><div><strong>${escapeHtml(item.title)}${item.location ? ` <code>${escapeHtml(item.location)}</code>` : ''}</strong><span>${escapeHtml(item.detail)}</span></div></div>`).join('') : '<div class="success-message"><span aria-hidden="true">✓</span> No basic structure issues found.</div>'}
-          </div>
+          </section>
         </div>
       </section>
       <footer id="about"><span>Built for learning and debugging HL7 v2</span><span class="footer-credit"><strong>HL7 Playground</strong><span>by</span><a href="https://modavidc.com" target="_blank" rel="noreferrer" aria-label="modavidc personal brand"><img src="./modavidc-logo.svg" alt="modavidc"></a></span><span>Messages stay on your device <span class="footer-lock">◆</span></span></footer>
     </main>`;
+
+  restoreFocusTarget(focusTarget);
 
   const textarea = app.querySelector<HTMLTextAreaElement>('#message')!;
   textarea.addEventListener('input', () => {
@@ -139,9 +207,11 @@ function render() {
       button.classList.remove('selected');
       button.setAttribute('aria-pressed', 'false');
     });
-    const lineNumbers = app.querySelector('.line-numbers')!;
-    lineNumbers.innerHTML = input.split(/\r\n?|\n/).map((_, index) => `<span>${String(index + 1).padStart(2, '0')}</span>`).join('');
-    app.querySelector('.editor-footer > span:last-child')!.textContent = `${input.split(/\r\n?|\n/).filter(line => line.trim()).length} segments`;
+    app.querySelector('.line-numbers')!.innerHTML = renderLineNumbers(input);
+    const summary = app.querySelector<HTMLElement>('#input-summary')!;
+    summary.textContent = input.length > MAX_MESSAGE_CHARACTERS
+      ? 'Character limit exceeded'
+      : `${input.length.toLocaleString('en-US')} characters`;
     app.querySelector<HTMLElement>('.stale-indicator')!.hidden = false;
     app.querySelector<HTMLButtonElement>('#copy')!.disabled = true;
   });
@@ -155,6 +225,7 @@ function render() {
     expandedFields.clear();
     hasPendingEdits = false;
     render();
+    announceOutcome(`Loaded ${examples[selectedExample].name}`);
   }));
 
   app.querySelector('#parse')!.addEventListener('click', () => {
@@ -165,6 +236,7 @@ function render() {
     expandedFields.clear();
     hasPendingEdits = false;
     render();
+    announceOutcome('Parsing complete');
   });
 
   app.querySelector('#clear')!.addEventListener('click', () => {
@@ -177,6 +249,7 @@ function render() {
     hasPendingEdits = false;
     render();
     app.querySelector<HTMLTextAreaElement>('#message')!.focus();
+    announceOutcome('Message cleared');
   });
 
   app.querySelectorAll<HTMLButtonElement>('[data-segment]').forEach(button => button.addEventListener('click', () => {
@@ -202,12 +275,14 @@ function render() {
     try {
       await navigator.clipboard.writeText(JSON.stringify(parsed, null, 2));
       copyMessage = 'Copied';
+      announcements.textContent = 'Parsed JSON copied to the clipboard.';
     } catch {
       copyMessage = 'Clipboard unavailable';
+      announcements.textContent = 'Clipboard access is unavailable.';
     }
     const copyButton = app.querySelector<HTMLButtonElement>('#copy')!;
     copyButton.disabled = false;
-    copyButton.innerHTML = `<span class="copied-label" role="status">${copyMessage}</span>`;
+    copyButton.innerHTML = `<span class="copied-label">${copyMessage}</span>`;
     window.setTimeout(() => { copyMessage = ''; render(); }, 1400);
   });
 

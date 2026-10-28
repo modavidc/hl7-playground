@@ -75,6 +75,15 @@ test('reports an empty message and a missing first MSH', () => {
   assert.ok(issues.some(item => item.title === 'MSH must be the first segment'));
 });
 
+test('keeps original source line numbers when blank lines are ignored', () => {
+  const raw = `\n\n${validMessage.split('\r')[0]}\n\nPID^1|MRN42`;
+  const message = parser.parseMessage(raw);
+  const issues = parser.validateMessage(raw, message);
+
+  assert.deepEqual(message.segments.map(segment => segment.lineNumber), [3, 5]);
+  assert.ok(issues.some(item => item.location === 'PID (line 5)'));
+});
+
 test('reports malformed MSH encoding and invalid field separators with locations', () => {
   const raw = 'MSH|^^\\&|APP|FAC|REC|RFAC|TIME||ADT^A01|CTRL1|P|2.5\rPID^1^MRN42';
   const issues = parser.validateMessage(raw, parser.parseMessage(raw));
@@ -99,6 +108,24 @@ test('warns when common required fields are blank', () => {
 
   assert.ok(issues.some(item => item.location === 'MSH-9'));
   assert.ok(issues.some(item => item.location === 'PID-5'));
+});
+
+test('rejects messages above the character limit before parsing', () => {
+  const raw = 'X'.repeat(parser.MAX_MESSAGE_CHARACTERS + 1);
+  const message = parser.parseMessage(raw);
+
+  assert.equal(message.limitExceeded, 'characters');
+  assert.equal(message.segments.length, 0);
+  assert.equal(parser.validateMessage(raw, message)[0].title, 'Message exceeds the size limit');
+});
+
+test('rejects messages above the segment limit', () => {
+  const raw = Array.from({ length: parser.MAX_SEGMENTS + 1 }, () => 'ZXX|1').join('\r');
+  const message = parser.parseMessage(raw);
+
+  assert.equal(message.limitExceeded, 'segments');
+  assert.equal(parser.countSegments(raw), parser.MAX_SEGMENTS + 1);
+  assert.equal(parser.validateMessage(raw, message)[0].title, 'Message has too many segments');
 });
 
 test('all built-in examples parse without basic validation issues', () => {

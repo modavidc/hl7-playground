@@ -17,11 +17,13 @@ export interface Hl7Segment {
   raw: string;
   fields: Hl7Field[];
   index: number;
+  lineNumber: number;
 }
 
 export interface Hl7Message {
   segments: Hl7Segment[];
   delimiters: Delimiters;
+  limitExceeded?: 'characters' | 'segments';
 }
 
 export interface Issue {

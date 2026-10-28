@@ -6,8 +6,21 @@
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
-  "scripts": { "dev": "vite", "build": "tsc -b && vite build", "preview": "vite preview", "test": "node --test" },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "test:ui": "playwright test"
+  },
   "homepage": "https://modavidc.github.io/hl7-playground/",
-  "repository": { "type": "git", "url": "https://github.com/modavidc/hl7-playground.git" },
-  "devDependencies": { "typescript": "^5.7.3", "vite": "^6.0.7" }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modavidc/hl7-playground.git"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
 }

@@ -10,7 +10,7 @@
 
 Built under the **modavidc** personal brand.
 
-**Current version:** `v0.1.0` · preview release. Interfaces and field coverage may change before `1.0.0`.
+**Latest tagged version:** `v0.1.0` · preview release. Changes on `main` after this tag are unreleased; interfaces and field coverage may change before `1.0.0`.
 
 ![HL7 Playground desktop interface](screenshots/hl7-playground.png)
 
@@ -40,20 +40,23 @@ The project follows semantic versioning. Versions below `1.0.0` are previews, so
 - Explains common MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, and MSA fields.
 - Checks for a missing or malformed MSH, invalid segment separators, mixed line endings, and blank common required fields.
 - Includes ADT^A01, ORU^R01, and ACK examples.
+- Limits input to 512,000 characters and 500 non-empty segments to keep parsing responsive.
 - Keeps parsing and fonts local to the browser; message content is not sent to a service.
 
 ## Quality checks
 
 ```sh
 npm test
+npx playwright install chromium
+npm run test:ui
 npm run build
 ```
 
-The test suite covers header indexing, delimiter handling, line endings, nested field structure, empty fields, validation locations, and all built-in examples. The GitHub Pages workflow runs the same checks before publishing.
+The parser suite covers header indexing, delimiter handling, line endings, nested field structure, empty fields, input limits, validation locations, HTML escaping, and all built-in examples. The browser suite covers keyboard focus, validation announcements, source line locations, and oversized inputs. Pull requests run both suites and a production build; the Pages workflow checks the parser and builds before deployment.
 
 ## Scope and limits
 
-This is an educational inspector and basic structural checker. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. Some fields change meaning or data type by version and message profile; the built-in field guide covers common v2.5 use and labels values such as OBX-5 as dependent on OBX-2. Examples contain synthetic data. Do not use this tool for clinical decisions.
+This is an educational inspector and basic structural checker. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. Input is limited to 512,000 characters and 500 non-empty segments. Some fields change meaning or data type by version and message profile; the built-in field guide covers common v2.5 use and labels values such as OBX-5 as dependent on OBX-2. Examples contain synthetic data. Do not use this tool for clinical decisions.
 
 ## Built-in field references
 
@@ -70,10 +73,13 @@ The project source is available under the [MIT License](LICENSE). Bundled Schibs
 ## Project structure
 
 - `src/parser.ts` parses messages, runs basic checks, and contains the built-in field guide.
+- `src/html.ts` escapes message content before it is inserted into the page.
 - `src/examples.ts` contains the synthetic demonstration messages.
 - `src/main.ts` renders the single-page inspector.
 - `src/styles.css` applies the modavidc Design System V2 typography and colors.
 - `test/parser.test.mjs` exercises parser and validation behavior with Node's built-in test runner.
+- `e2e/playground.spec.ts` covers the main browser interactions.
+- `.github/workflows/ci.yml` runs tests and a build for pull requests.
 - `.github/workflows/pages.yml` tests, builds, and deploys the static app to GitHub Pages.
 - `public/fonts/FONT-LICENSES.txt` carries the licenses for the bundled font files.
 
