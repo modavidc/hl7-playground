@@ -1,8 +1,16 @@
 # HL7 Playground
 
+<p>
+  <a href="https://github.com/modavidc/hl7-playground/tags"><img alt="Latest tag" src="https://img.shields.io/github/v/tag/modavidc/hl7-playground?sort=semver"></a>
+  <a href="https://github.com/modavidc/hl7-playground/actions/workflows/pages.yml"><img alt="GitHub Pages deployment" src="https://img.shields.io/github/actions/workflow/status/modavidc/hl7-playground/pages.yml?branch=main&label=Pages"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-1E7D47.svg"></a>
+</p>
+
 **Explore an HL7 v2 message as a structure you can understand.** Paste a message to inspect its segments and fields, expand components, and see where basic checks find problems. Parsing happens in your browser.
 
 Built under the **modavidc** personal brand.
+
+**Current version:** `v0.1.0` · preview release. Interfaces and field coverage may change before `1.0.0`.
 
 ![HL7 Playground desktop interface](screenshots/hl7-playground.png)
 
@@ -12,14 +20,16 @@ HL7 v2 is common in healthcare integrations, but its compact segment format make
 
 ## Try it
 
-The repository is configured to publish to [GitHub Pages](https://modavidc.github.io/hl7-playground/) after it is pushed to the `modavidc/hl7-playground` repository and Pages is set to **GitHub Actions**.
-
-Run it locally:
+The planned [GitHub Pages demo](https://modavidc.github.io/hl7-playground/) will be available after the repository is published and Pages is set to **GitHub Actions**. Until then, run it locally:
 
 ```sh
 npm ci
 npm run dev
 ```
+
+## Releases
+
+The project follows semantic versioning. Versions below `1.0.0` are previews, so parser behavior and field definitions can still change. See [CHANGELOG.md](CHANGELOG.md) for the release history.
 
 ## Features
 
@@ -69,4 +79,4 @@ The project source is available under the [MIT License](LICENSE). Bundled Schibs
 
 - Expand field coverage and version-specific definitions.
 - Add optional message profiles for deeper validation.
-- Add JSON export and a shareable sample library.
+- Add downloadable JSON exports and a shareable sample library.
