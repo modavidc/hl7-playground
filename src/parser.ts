@@ -178,7 +178,15 @@ export function validateMessage(input: string, message: Hl7Message): Issue[] {
     }
     for (const fieldIndex of required) {
       if (!segment.fields[fieldIndex - 1]?.value) {
-        issues.push(issue('warning', `${segment.name}-${fieldIndex} is empty`, 'This field is required for the basic structure check.', `${segment.name}-${fieldIndex}`));
+        const isPatientIdentifier = segment.name === 'PID' && fieldIndex === 3;
+        issues.push(issue(
+          'warning',
+          isPatientIdentifier ? 'PID-3 is empty (basic check)' : `${segment.name}-${fieldIndex} is empty`,
+          isPatientIdentifier
+            ? 'The basic check expects a patient identifier here. This is a structural hint, not a message-profile conformance result.'
+            : 'This field is expected by the basic structure check.',
+          `${segment.name}-${fieldIndex}`
+        ));
       }
     }
   }
@@ -196,6 +204,10 @@ export const segmentDescriptions: Record<string, string> = {
   ORC: 'Common Order',
   OBR: 'Observation Request',
   OBX: 'Observation Result',
+  FT1: 'Financial Transaction',
+  IN1: 'Insurance',
+  GP1: 'Grouping / Reimbursement',
+  PR1: 'Procedures',
   MSA: 'Message Acknowledgment',
   ERR: 'Error Information',
   NTE: 'Notes and Comments'
@@ -266,6 +278,61 @@ export const fieldDefinitions: Record<string, Record<number, FieldDefinition>> =
     8: { name: 'Abnormal flags', description: 'Flags that qualify the result relative to its reference range.' },
     11: { name: 'Result status', description: 'Status of this observation result.' }
   },
+  FT1: {
+    1: { name: 'Set ID', datatype: 'SI', description: 'Sequence number for this financial transaction.' },
+    2: { name: 'Transaction ID', datatype: 'ST', description: 'Identifier assigned by the sending system for this transaction.' },
+    3: { name: 'Transaction batch ID', datatype: 'ST', description: 'Identifier for the batch containing this transaction.' },
+    4: { name: 'Transaction date', datatype: 'DR', description: 'Date or date range when the service or transaction took place.' },
+    5: { name: 'Posting date', datatype: 'TS', description: 'Date the transaction was sent for financial posting.' },
+    6: { name: 'Transaction type', datatype: 'IS', description: 'Classifies the transaction, such as charge, credit, payment, or adjustment.' },
+    7: { name: 'Transaction code', datatype: 'CE', description: 'Code identifying the billed service, item, or payment.' },
+    8: { name: 'Transaction description', datatype: 'ST', description: 'Legacy description; newer messages generally carry text in FT1-7.' },
+    10: { name: 'Transaction quantity', datatype: 'NM', description: 'Quantity of items associated with this transaction.' },
+    11: { name: 'Extended amount', datatype: 'CP', description: 'Total price for the transaction.' },
+    12: { name: 'Unit amount', datatype: 'CP', description: 'Price for one unit of the transaction.' },
+    13: { name: 'Department code', datatype: 'CE', description: 'Department associated with the transaction.' },
+    14: { name: 'Insurance plan ID', datatype: 'CE', description: 'Insurance plan associated with this transaction.' },
+    15: { name: 'Insurance amount', datatype: 'CP', description: 'Amount attributed to insurance for this transaction.' },
+    16: { name: 'Assigned patient location', datatype: 'PL', description: 'Location associated with the transaction.' },
+    17: { name: 'Fee schedule', datatype: 'IS', description: 'Fee schedule used to price the transaction.' },
+    18: { name: 'Patient type', datatype: 'IS', description: 'Patient classification used for the transaction.' },
+    19: { name: 'Diagnosis code', datatype: 'CE', description: 'Diagnosis associated with the financial transaction.' },
+    20: { name: 'Performed by', datatype: 'XCN', description: 'Provider who performed the service.' },
+    21: { name: 'Ordered by', datatype: 'XCN', description: 'Provider who ordered the service.' },
+    22: { name: 'Unit cost', datatype: 'CP', description: 'Cost of one unit.' },
+    23: { name: 'Filler order number', datatype: 'EI', description: 'Identifier assigned by the system that filled the order.' },
+    25: { name: 'Procedure code', datatype: 'CE', description: 'Procedure associated with the financial transaction.' }
+  },
+  IN1: {
+    1: { name: 'Set ID', datatype: 'SI', description: 'Sequence number for this insurance plan group.' },
+    2: { name: 'Insurance plan ID', datatype: 'CE', description: 'Identifier and optional description of the insurance plan.' },
+    3: { name: 'Insurance company ID', datatype: 'CX', description: 'Identifier for the insurance company.' },
+    4: { name: 'Insurance company name', datatype: 'XON', description: 'Name of the insurance company.' },
+    5: { name: 'Insurance company address', datatype: 'XAD', description: 'Address of the insurance company.' },
+    8: { name: 'Group number', datatype: 'ST', description: 'Group number associated with the insurance plan.' },
+    15: { name: 'Plan type', datatype: 'IS', description: 'Type of insurance plan.' },
+    16: { name: 'Name of insured', datatype: 'XPN', description: 'Name of the person covered by the plan.' },
+    17: { name: 'Insured relationship', datatype: 'CE', description: 'Relationship of the insured to the patient.' }
+  },
+  GP1: {
+    1: { name: 'Type of bill code', datatype: 'IS', description: 'Classifies the bill for grouping and reimbursement.' },
+    2: { name: 'Revenue code', datatype: 'IS', description: 'Revenue category associated with the claim.' },
+    3: { name: 'Overall claim disposition code', datatype: 'IS', description: 'Disposition assigned to the overall claim.' },
+    4: { name: 'OCE edits per visit code', datatype: 'IS', description: 'Outpatient code editor result associated with the visit.' },
+    5: { name: 'Outlier cost', datatype: 'CP', description: 'Cost reported for grouping and reimbursement.' }
+  },
+  PR1: {
+    1: { name: 'Set ID', datatype: 'SI', description: 'Sequence number for this procedure.' },
+    2: { name: 'Procedure coding method', datatype: 'IS', description: 'Coding system used for the procedure code.' },
+    3: { name: 'Procedure code', datatype: 'CE', description: 'Code and optional text identifying the procedure.' },
+    4: { name: 'Procedure description', datatype: 'ST', description: 'Text description of the procedure.' },
+    5: { name: 'Procedure date / time', datatype: 'TS', description: 'Date and time when the procedure was performed.' },
+    6: { name: 'Procedure functional type', datatype: 'IS', description: 'Functional category of the procedure.' },
+    7: { name: 'Procedure minutes', datatype: 'NM', description: 'Duration of the procedure in minutes.' },
+    13: { name: 'Consent code', datatype: 'CE', description: 'Consent associated with the procedure.' },
+    14: { name: 'Procedure priority', datatype: 'ID', description: 'Priority assigned to the procedure.' },
+    15: { name: 'Associated diagnosis code', datatype: 'CE', description: 'Diagnosis associated with the procedure.' }
+  },
   MSA: {
     1: { name: 'Acknowledgment code', description: 'Indicates whether the message was accepted or rejected.' },
     2: { name: 'Message control ID', description: 'Control ID of the message being acknowledged.' },
@@ -273,7 +340,16 @@ export const fieldDefinitions: Record<string, Record<number, FieldDefinition>> =
   }
 };
 
-export function getFieldDefinition(segment: string, field: number): FieldDefinition {
+export function getFieldDefinition(segment: string, field: number, value = ''): FieldDefinition {
+  const [messageCode, triggerEvent] = value.split(/[^A-Za-z0-9]+/);
+  if (segment === 'MSH' && field === 9 && messageCode === 'DFT' && triggerEvent === 'P03') {
+    return { name: 'Message type', datatype: 'MSG', description: 'DFT^P03 posts detailed financial transactions, such as charges, payments, and adjustments.' };
+  }
+
+  if (segment.startsWith('Z')) {
+    return { name: `Local field ${field}`, description: `This field belongs to the locally defined ${segment} segment. Its meaning depends on the sending implementation.` };
+  }
+
   return fieldDefinitions[segment]?.[field] ?? {
     name: `Field ${field}`,
     description: `Field ${field} of the ${segment} segment. This field is not described in the built-in guide.`

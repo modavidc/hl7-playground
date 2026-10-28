@@ -108,7 +108,7 @@ function renderValueTree(segmentName: string, field: Hl7Field): string {
 
 function renderField(segmentName: string, field: Hl7Field): string {
   const fieldKey = `${segmentName}-${field.index}`;
-  const definition = getFieldDefinition(segmentName, field.index);
+  const definition = getFieldDefinition(segmentName, field.index, field.value);
   const expanded = expandedFields.has(fieldKey);
   const fieldKeyHtml = escapeHtml(fieldKey);
   const structure = isStructured(field);
@@ -131,7 +131,8 @@ function renderField(segmentName: string, field: Hl7Field): string {
 
 function renderSegment(segment: Hl7Message['segments'][number]): string {
   const expanded = expandedSegments === null || expandedSegments.has(segment.index);
-  const description = segmentDescriptions[segment.name] ?? 'HL7 Segment';
+  const description = segmentDescriptions[segment.name]
+    ?? (segment.name.startsWith('Z') ? 'Local extension (implementation-defined)' : 'HL7 Segment');
   return `<div class="segment ${expanded ? 'is-open' : ''}">
     <button class="segment-row" data-segment="${segment.index}" aria-expanded="${expanded}">
       <span class="tree-chevron">${icons.chevron}</span>

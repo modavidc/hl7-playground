@@ -110,6 +110,25 @@ test('warns when common required fields are blank', () => {
   assert.ok(issues.some(item => item.location === 'PID-5'));
 });
 
+test('labels the PID-3 warning as a basic check, not a profile conformance result', () => {
+  const raw = validMessage.replace('MRN42^^^FAC^MR', '');
+  const issues = parser.validateMessage(raw, parser.parseMessage(raw));
+  const patientIdWarning = issues.find(item => item.location === 'PID-3');
+
+  assert.equal(patientIdWarning.title, 'PID-3 is empty (basic check)');
+  assert.match(patientIdWarning.detail, /not a message-profile conformance result/);
+});
+
+test('explains DFT^P03 and labels Z fields as implementation-defined', () => {
+  assert.match(parser.getFieldDefinition('MSH', 9, 'DFT^P03').description, /detailed financial transactions/);
+  assert.match(parser.getFieldDefinition('MSH', 9, 'DFT*P03*DFT_P03').description, /detailed financial transactions/);
+  assert.match(parser.getFieldDefinition('ZDN', 1).description, /locally defined ZDN segment/);
+  assert.equal(parser.segmentDescriptions.FT1, 'Financial Transaction');
+  assert.equal(parser.segmentDescriptions.IN1, 'Insurance');
+  assert.equal(parser.segmentDescriptions.GP1, 'Grouping / Reimbursement');
+  assert.equal(parser.segmentDescriptions.PR1, 'Procedures');
+});
+
 test('rejects messages above the character limit before parsing', () => {
   const raw = 'X'.repeat(parser.MAX_MESSAGE_CHARACTERS + 1);
   const message = parser.parseMessage(raw);
@@ -129,7 +148,7 @@ test('rejects messages above the segment limit', () => {
 });
 
 test('all built-in examples parse without basic validation issues', () => {
-  assert.deepEqual(examples.map(example => example.name), ['ADT^A01', 'ORU^R01', 'ACK']);
+  assert.deepEqual(examples.map(example => example.name), ['ADT^A01', 'ORU^R01', 'ACK', 'DFT^P03']);
   for (const example of examples) {
     const message = parser.parseMessage(example.message);
     assert.ok(message.segments.length > 1, `${example.name} should contain multiple segments`);

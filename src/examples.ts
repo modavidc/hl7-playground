@@ -17,5 +17,9 @@ export const examples: Example[] = [
   {
     name: 'ACK', type: 'Acknowledgment', description: 'Application accept · 2 segments',
     message: 'MSH|^~\\&|EHR|MAIN|REGISTRATION|NORTH|20250314103100||ACK^A01|ACK00001|P|2.5\r\nMSA|AA|MSG00001|Message accepted'
+  },
+  {
+    name: 'DFT^P03', type: 'Financial transaction', description: 'Synthetic outpatient charge · 8 segments',
+    message: 'MSH|^~\\&|BILLING|NORTH|ACCOUNTING|MAIN|20250401110000||DFT^P03|FIN00001|P|2.5\r\nPID|1||DEMO-1042^^^NORTH^MR||Morgan^Taylor||19840115|X\r\nPV1|1|O|CLINIC^101^A\r\nFT1|1|TXN-2001|BATCH-01|20250401103000^20250401103000|20250401110000|CG|99213^Office visit^CPT||1|125.00^TP\r\nDG1|1||Z00.00^Encounter for general examination^ICD-10\r\nPR1|1|CPT|99213^Office visit^CPT|Office visit|20250401103000\r\nIN1|1|PPO^Preferred Provider Plan^HL70072|PLAN-01|Northstar Health Plan\r\nGP1|131'
   }
 ];

@@ -122,9 +122,9 @@ main { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 .hero h1 span { color: var(--accent); }
 .hero p { margin: 0; color: var(--muted); font-size: 14px; }
 
-.examples { max-width: 860px; margin: 0 auto 24px; }
+.examples { max-width: 1072px; margin: 0 auto 24px; }
 .section-kicker { margin: 0 0 10px 2px; }
-.example-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.example-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .example-card {
   display: grid;
   grid-template-columns: 1fr auto;

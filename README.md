@@ -37,9 +37,9 @@ The project follows semantic versioning. Versions below `1.0.0` are previews, so
 
 - Parses HL7 v2 messages using the delimiters declared in MSH.
 - Preserves fields, repetitions, components, and subcomponents.
-- Explains common MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, and MSA fields.
+- Explains common MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, FT1, IN1, GP1, PR1, and MSA fields.
 - Checks for a missing or malformed MSH, invalid segment separators, mixed line endings, and blank common required fields.
-- Includes ADT^A01, ORU^R01, and ACK examples.
+- Includes ADT^A01, ORU^R01, ACK, and a synthetic DFT^P03 financial transaction example.
 - Limits input to 512,000 characters and 500 non-empty segments to keep parsing responsive.
 - Keeps parsing and fonts local to the browser; message content is not sent to a service.
 
@@ -52,11 +52,11 @@ npm run test:ui
 npm run build
 ```
 
-The parser suite covers header indexing, delimiter handling, line endings, nested field structure, empty fields, input limits, validation locations, HTML escaping, and all built-in examples. The browser suite covers keyboard focus, validation announcements, source line locations, and oversized inputs. Pull requests run both suites and a production build; the Pages workflow checks the parser and builds before deployment.
+The parser suite covers header indexing, delimiter handling, line endings, nested field structure, empty fields, input limits, validation locations, HTML escaping, and all built-in examples. The browser suite covers keyboard focus, validation announcements, source line locations, the DFT example, and oversized inputs. Pull requests and the Pages deployment workflow run both suites and a production build before publishing.
 
 ## Scope and limits
 
-This is an educational inspector and basic structural checker. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. Input is limited to 512,000 characters and 500 non-empty segments. Some fields change meaning or data type by version and message profile; the built-in field guide covers common v2.5 use and labels values such as OBX-5 as dependent on OBX-2. Examples contain synthetic data. Do not use this tool for clinical decisions.
+This is an educational inspector and basic structural checker. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. A warning such as an empty PID-3 is a basic structural hint, not an implementation guide conformance result. Input is limited to 512,000 characters and 500 non-empty segments. Some fields change meaning or data type by version and message profile; the built-in field guide covers common v2.5 use and labels values such as OBX-5 as dependent on OBX-2. `Z` segments are local extensions and their field meanings depend on the sending implementation. Examples contain synthetic data. Do not use this tool for clinical decisions.
 
 ## Built-in field references
 
@@ -65,6 +65,7 @@ Names and descriptions are intended as a quick guide. See the HL7-maintained ref
 - [MSH segment mapping](https://hl7.org/fhir/uv/v2mappings/ConceptMap-segment-msh-to-encounter.html)
 - [PID segment mapping](https://www.hl7.org/fhir/uv/v2mappings/ConceptMap-segment-pid-to-patient.html)
 - [OBX segment mapping](https://www.hl7.org/fhir/uv/v2mappings/ConceptMap-segment-obx-to-observation.html)
+- [HL7 v2.5.1 financial management segments](https://www.hl7.eu/HL7v2x/v251/std251/ch06.html) (FT1, IN1, GP1, and PR1)
 
 ## Licensing
 

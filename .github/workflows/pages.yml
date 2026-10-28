@@ -29,6 +29,10 @@ jobs:
         run: npm ci
       - name: Run parser tests
         run: npm test
+      - name: Install Chromium for UI tests
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: npm run test:ui
       - name: Build site
         run: npm run build -- --base=/hl7-playground/
       - name: Configure Pages

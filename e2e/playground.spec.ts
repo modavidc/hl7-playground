@@ -11,6 +11,28 @@ test('loads the ADT example and exposes its parsed structure', async ({ page }) 
   await expect(page.getByText('No basic structure issues found.')).toBeVisible();
 });
 
+test('loads the synthetic financial example with DFT field guidance', async ({ page }) => {
+  await page.locator('[data-example="3"]').click();
+
+  await expect(page.locator('.message-pill')).toHaveText('DFT ^ P03');
+  await expect(page.locator('.segment-name').nth(3)).toHaveText('FT1');
+  await expect(page.locator('.segment-description').nth(3)).toHaveText('Financial Transaction');
+  await page.locator('[data-field="FT1-7"]').click();
+  await expect(page.locator('.field-detail')).toContainText('Code identifying the billed service');
+  await expect(page.locator('.validation')).toContainText('No basic structure issues found.');
+});
+
+test('identifies a Z segment as a local extension without guessing its field meaning', async ({ page }) => {
+  await page.getByRole('textbox', { name: 'HL7 v2 message input' }).fill(
+    'MSH|^~\\&|APP|FAC|REC|RFAC|20250101010101||ADT^A01|CTRL1|P|2.5\nZDN|LOCAL-VALUE'
+  );
+  await page.getByRole('button', { name: 'Parse message' }).click();
+
+  await expect(page.locator('.segment-description').nth(1)).toHaveText('Local extension (implementation-defined)');
+  await page.locator('[data-field="ZDN-1"]').click();
+  await expect(page.locator('.field-detail')).toContainText('meaning depends on the sending implementation');
+});
+
 test('preserves keyboard focus while expanding segments and field explanations', async ({ page }) => {
   const segment = page.locator('[data-segment="1"]');
   await segment.focus();

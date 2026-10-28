@@ -8,6 +8,9 @@ This project follows semantic versioning. Releases below `1.0.0` are previews an
 - Bound message parsing to 512,000 characters and 500 non-empty segments.
 - Preserve keyboard focus through tree interactions and announce parse results to assistive technology.
 - Add parser, HTML escaping, and browser interaction coverage, plus pull request checks.
+- Add a synthetic DFT^P03 example and field guidance for FT1, IN1, GP1, and PR1.
+- Clarify that the PID-3 notice is a basic structural hint, identify local Z segments, and run browser checks before Pages deployment.
+- Refresh the README screenshot for the financial transaction example.
 
 ## [0.1.0] - 2026-10-28
 
