@@ -36,6 +36,29 @@ HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates a 
 - Keeps parsing and fonts in the browser. Message content is not sent to a service.
 - Limits input to 512,000 characters and imported files to 2 MB.
 
+## Who it's for
+
+For HL7 v2 integrators, interoperability analysts, QA teams, and developers who need to inspect a message's structure while debugging or learning. It is an exploratory tool with basic checks, not a conformance validator.
+
+## Try it in 30 seconds
+
+1. [Open the live demo](https://modavidc.github.io/hl7-playground/).
+2. Paste this synthetic ADT message or choose the built-in **ADT^A01** example, then select **Parse message**.
+
+```hl7
+MSH|^~\&|SENDER|FACILITY|RECEIVER|FACILITY|20260101120000||ADT^A01|MSG0001|P|2.5
+PID|1||DEMO-001^^^FACILITY^MR||Sample^Patient
+PV1|1|O
+```
+
+3. Expand **PID** to inspect its fields. Select a field name for its explanation; if validation finds an issue, choose **View in tree** to jump to its location.
+
+## Troubleshooting
+
+- **The message does not parse as expected:** Keep the `MSH` header intact. The parser reads field and encoding separators from `MSH-1` and `MSH-2`; it accepts CR, LF, or CRLF between segments.
+- **A file is rejected:** Select a `.hl7` or `.txt` file under 2 MB. Pasted messages are limited to 512,000 characters and 500 non-empty segments.
+- **A warning remains:** Basic checks do not apply implementation guides or message profiles. Review the location in the tree, then confirm profile-specific requirements with your integration documentation.
+
 ## 🚀 Run it locally
 
 ```sh
