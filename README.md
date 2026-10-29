@@ -10,9 +10,11 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-1E7D47.svg"></a>
 </p>
 
-HL7 Playground turns HL7 v2 messages into an expandable tree. Paste a message to inspect its segments, follow fields through components, and see basic structural warnings. Parsing stays in your browser.
+HL7 Playground is a browser-based HL7 v2 message inspector. Paste or open a message to explore segments, fields, and components, then review basic structural warnings.
 
-For HL7 v2 integrators, interoperability analysts, QA teams, and developers who need to inspect messages while debugging or learning.
+Built for HL7 v2 integrators, interoperability analysts, QA teams, and developers. Messages are parsed locally in your browser.
+
+**Current version:** `v0.1.0` preview. Changes on `main` after this tag are unreleased.
 
 <p>
   <a href="https://modavidc.github.io/hl7-playground/">Open the live demo</a> ·
@@ -26,8 +28,6 @@ For HL7 v2 integrators, interoperability analysts, QA teams, and developers who 
 </p>
 
 ## What it does
-
-HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates them into an expandable tree so each value is easier to trace.
 
 - Parses delimiters declared in MSH and preserves fields, repetitions, components, and subcomponents.
 - Explains common fields across MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, FT1, IN1, GP1, PR1, and MSA.
@@ -48,13 +48,7 @@ PV1|1|O
 
 3. Expand **PID** to inspect its fields. Select a field name for its explanation; if validation finds an issue, choose **View in tree** to jump to its location.
 
-## Troubleshooting
-
-- **The message does not parse as expected:** Keep the `MSH` header intact. The parser reads field and encoding separators from `MSH-1` and `MSH-2`; it accepts CR, LF, or CRLF between segments.
-- **A file is rejected:** Select a `.hl7` or `.txt` file under 2 MB. Pasted messages are limited to 512,000 characters and 500 non-empty segments.
-- **A warning remains:** Basic checks do not apply implementation guides or message profiles. Review the location in the tree, then confirm profile-specific requirements with your integration documentation.
-
-## Run locally
+### Run locally
 
 ```sh
 git clone https://github.com/modavidc/hl7-playground.git
@@ -63,7 +57,16 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. Choose an example or paste your own HL7 v2 message, then select **Parse message**.
+Open the local URL printed by Vite. Choose an example or paste a message, then select **Parse message**.
+
+## Troubleshooting
+
+| Problem | What it means | How to fix |
+| --- | --- | --- |
+| The message does not parse as expected | The header or delimiters may be malformed. | Keep `MSH` intact. Separators are read from `MSH-1` and `MSH-2`; segment boundaries may be CR, LF, or CRLF. |
+| A file is rejected | The format or size is outside the supported limits. | Use a `.hl7` or `.txt` file under 2 MB. |
+| A structural warning remains | The check found a basic issue; it does not apply a message profile. | Follow the location shown in the tree and verify profile requirements with your integration documentation. |
+| A field explanation is missing or differs | The field guide covers common v2.5 usage; meanings can vary by version or profile. | Check the version-specific HL7 reference or the sending implementation's documentation. |
 
 ## Tests
 
@@ -74,7 +77,7 @@ npm run test:ui
 npm run build
 ```
 
-The parser tests cover delimiter handling, line endings, nested field structure, limits, validation locations, and built-in examples. Browser tests cover parsing, local file loading, field guidance, keyboard focus, accessibility announcements, and local Z segments. Pull requests run both test suites and a production build. The Pages workflow runs the same checks before deployment.
+Parser tests cover delimiter handling, nested fields, limits, validation, and examples. Browser tests cover parsing, local file loading, field guidance, keyboard interaction, and local Z segments. GitHub Actions runs both suites and a production build for pull requests and Pages deployments.
 
 ## Architecture
 
@@ -109,20 +112,13 @@ hl7-playground/
 └── playwright.config.ts
 ```
 
-## Version
-
-The latest tag is `v0.1.0`, a preview release. Changes on `main` after that tag are not part of a release yet. Parser behavior and field coverage may change before `1.0.0`.
-
 ## Scope and limits
 
-- **Validation scope:** Basic structural checks only. The tool does not validate implementation guides or certify conformance.
-- **Parsing limits:** HL7 escape sequences are not decoded, MLLP framing is not parsed, and the tool does not replace a production interface engine.
-- **Field guidance:** Definitions cover common v2.5 usage. Field meaning can vary by version and message profile. `Z` segments are local extensions whose meaning depends on the sending implementation.
-- **PID-3 notice:** An empty PID-3 warning is a structural hint, not a profile-conformance result.
-- **Input limits:** 512,000 characters or 500 non-empty segments per message; imported files are capped at 2 MB.
-- **Example data:** Built-in messages contain synthetic data.
-- **Sensitive data:** Do not include real patient information in public bug reports or feature requests.
-- **Clinical use:** Do not use this tool for clinical decisions.
+- **Supported:** Browser-based HL7 v2 parsing, expandable message structure, common field explanations, and basic structural checks.
+- **Not supported:** Implementation-guide or profile conformance, escape-sequence decoding, MLLP framing, or production interface-engine use.
+- **Field coverage:** Common v2.5 usage. Field meaning may vary by version and profile; `Z` segments are defined by the sending implementation. An empty PID-3 notice is only a structural hint.
+- **Input limits:** 512,000 characters and 500 non-empty segments per message; imported files are capped at 2 MB.
+- **Data and use:** Examples are synthetic. Do not include real patient information in public issues or use the tool for clinical decisions.
 
 ## HL7 references
 
