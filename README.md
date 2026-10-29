@@ -5,12 +5,12 @@
   <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white">
   <img alt="Playwright" src="https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white">
   <a href="https://github.com/modavidc/hl7-playground/tags"><img alt="Latest tag" src="https://img.shields.io/github/v/tag/modavidc/hl7-playground?sort=semver&label=latest%20tag"></a>
-  <a href="https://github.com/modavidc/hl7-playground/actions/workflows/ci.yml"><img alt="CI checks" src="https://img.shields.io/github/actions/workflow/status/modavidc/hl7-playground/ci.yml?branch=main&label=CI"></a>
+  <a href="https://github.com/modavidc/hl7-playground/actions/workflows/ci.yml"><img alt="Continuous integration with GitHub Actions" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white"></a>
   <a href="https://github.com/modavidc/hl7-playground/actions/workflows/pages.yml"><img alt="GitHub Pages deployment" src="https://img.shields.io/github/actions/workflow/status/modavidc/hl7-playground/pages.yml?branch=main&label=Pages"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-1E7D47.svg"></a>
 </p>
 
-**Read an HL7 v2 message as a tree.** Paste a message to inspect segments, fields, repetitions, components, and subcomponents. The built-in guide explains common fields, and basic checks point out structural issues. Everything runs in your browser.
+HL7 Playground turns HL7 v2 messages into an expandable tree. Paste a message to inspect its segments, follow fields through components, and see basic structural warnings. Parsing stays in your browser.
 
 <p>
   <a href="https://modavidc.github.io/hl7-playground/">🚀 Open the live demo</a> ·
@@ -18,7 +18,10 @@
   <a href="https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml">💡 Request a feature</a>
 </p>
 
-![HL7 Playground desktop interface](screenshots/hl7-playground.png)
+<p align="center">
+  <a href="screenshots/hl7-playground-demo.gif"><img src="screenshots/hl7-playground-demo.gif" alt="HL7 Playground parsing a synthetic DFT message and explaining its transaction code" width="960"></a><br>
+  <sub>Click the demo to open the full-size GIF.</sub>
+</p>
 
 ## ✨ What it does
 
@@ -69,7 +72,7 @@ hl7-playground/
 ├── public/
 │   └── fonts/                     # Locally served fonts and license notices
 ├── screenshots/
-│   └── hl7-playground.png
+│   └── hl7-playground-demo.gif
 ├── src/
 │   ├── examples.ts                # Synthetic demo messages
 │   ├── html.ts                    # Escapes untrusted message content
