@@ -5,7 +5,7 @@ dist/
 playwright-report/
 test-results/
 .edge-profile*/
-examples/*.hl7
+/examples/
 screenshots/hl7-playground-mobile.png
 *.tsbuildinfo
 .DS_Store
