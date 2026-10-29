@@ -12,10 +12,12 @@
 
 HL7 Playground turns HL7 v2 messages into an expandable tree. Paste a message to inspect its segments, follow fields through components, and see basic structural warnings. Parsing stays in your browser.
 
+For HL7 v2 integrators, interoperability analysts, QA teams, and developers who need to inspect messages while debugging or learning.
+
 <p>
-  <a href="https://modavidc.github.io/hl7-playground/">🚀 Open the live demo</a> ·
-  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml">🐛 Report a bug</a> ·
-  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml">💡 Request a feature</a>
+  <a href="https://modavidc.github.io/hl7-playground/">Open the live demo</a> ·
+  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml">Report a bug</a> ·
+  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml">Request a feature</a>
 </p>
 
 <p align="center">
@@ -23,24 +25,17 @@ HL7 Playground turns HL7 v2 messages into an expandable tree. Paste a message to
   <sub>Click the demo to open the full-size GIF.</sub>
 </p>
 
-## ✨ What it does
+## What it does
 
-HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates a message into an expandable tree so you can follow each value back to its segment and field.
+HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates them into an expandable tree so each value is easier to trace.
 
 - Parses delimiters declared in MSH and preserves fields, repetitions, components, and subcomponents.
 - Explains common fields across MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, FT1, IN1, GP1, PR1, and MSA.
-- Flags a missing or malformed MSH, invalid segment separators, mixed line endings, and blank fields used by its basic checks.
-- Jumps from a validation finding to the matching segment or field in the parsed tree when a location is available.
-- Includes ADT^A01, ORU^R01, ACK, and a synthetic DFT^P03 financial transaction.
-- Opens `.hl7` and `.txt` files locally in the browser. File contents are not uploaded.
-- Keeps parsing and fonts in the browser. Message content is not sent to a service.
-- Limits input to 512,000 characters and imported files to 2 MB.
+- Flags basic structural issues and links findings to their segment or field in the tree.
+- Includes synthetic ADT^A01, ORU^R01, ACK, and DFT^P03 examples.
+- Opens `.hl7` and `.txt` files locally; message content is not sent to a service.
 
-## Who it's for
-
-For HL7 v2 integrators, interoperability analysts, QA teams, and developers who need to inspect a message's structure while debugging or learning. It is an exploratory tool with basic checks, not a conformance validator.
-
-## Try it in 30 seconds
+## Quick start
 
 1. [Open the live demo](https://modavidc.github.io/hl7-playground/).
 2. Paste this synthetic ADT message or choose the built-in **ADT^A01** example, then select **Parse message**.
@@ -59,7 +54,7 @@ PV1|1|O
 - **A file is rejected:** Select a `.hl7` or `.txt` file under 2 MB. Pasted messages are limited to 512,000 characters and 500 non-empty segments.
 - **A warning remains:** Basic checks do not apply implementation guides or message profiles. Review the location in the tree, then confirm profile-specific requirements with your integration documentation.
 
-## 🚀 Run it locally
+## Run locally
 
 ```sh
 git clone https://github.com/modavidc/hl7-playground.git
@@ -70,7 +65,7 @@ npm run dev
 
 Open the local URL printed by Vite. Choose an example or paste your own HL7 v2 message, then select **Parse message**.
 
-## 🧪 Checks and tests
+## Tests
 
 ```sh
 npm test
@@ -81,7 +76,7 @@ npm run build
 
 The parser tests cover delimiter handling, line endings, nested field structure, limits, validation locations, and built-in examples. Browser tests cover parsing, local file loading, field guidance, keyboard focus, accessibility announcements, and local Z segments. Pull requests run both test suites and a production build. The Pages workflow runs the same checks before deployment.
 
-## 🌳 Architecture
+## Architecture
 
 ```text
 hl7-playground/
@@ -114,11 +109,11 @@ hl7-playground/
 └── playwright.config.ts
 ```
 
-## 📝 Version
+## Version
 
 The latest tag is `v0.1.0`, a preview release. Changes on `main` after that tag are not part of a release yet. Parser behavior and field coverage may change before `1.0.0`.
 
-## ⚠️ Scope and limits
+## Scope and limits
 
 - **Validation scope:** Basic structural checks only. The tool does not validate implementation guides or certify conformance.
 - **Parsing limits:** HL7 escape sequences are not decoded, MLLP framing is not parsed, and the tool does not replace a production interface engine.
@@ -129,7 +124,7 @@ The latest tag is `v0.1.0`, a preview release. Changes on `main` after that tag 
 - **Sensitive data:** Do not include real patient information in public bug reports or feature requests.
 - **Clinical use:** Do not use this tool for clinical decisions.
 
-## 📚 HL7 references
+## HL7 references
 
 These references provide additional context for common segment fields:
 
@@ -138,10 +133,10 @@ These references provide additional context for common segment fields:
 - [OBX segment mapping](https://www.hl7.org/fhir/uv/v2mappings/ConceptMap-segment-obx-to-observation.html)
 - [HL7 v2.5.1 financial management segments](https://www.hl7.eu/HL7v2x/v251/std251/ch06.html)
 
-## 🤝 Feedback and contributions
+## Feedback and contributions
 
 Use the issue forms to [report a bug](https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml) or [request a feature](https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml). Include synthetic messages only.
 
-## 📄 License
+## License
 
 The project source is available under the [MIT License](LICENSE). Bundled Schibsted Grotesk and JetBrains Mono font files have separate SIL Open Font License notices in `public/fonts/FONT-LICENSES.txt`.
