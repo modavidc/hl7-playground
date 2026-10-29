@@ -151,6 +151,9 @@ main { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 .panel { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .panel-heading { display: flex; height: 52px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #E4ECE5; }
 .panel-heading > div { display: flex; align-items: center; gap: 8px; }
+.panel-heading .editor-actions { gap: 12px; }
+.file-input { display: none; }
+.file-error { padding: 7px 16px; background: #FFF3F2; color: var(--danger); font-size: 12px; }
 .panel-icon { display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: 8px; }
 .panel-icon svg, .icon-button svg, .parse-button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .editor-icon, .validation-icon { background: #E4ECE5; color: var(--accent-ink); }

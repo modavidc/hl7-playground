@@ -33,6 +33,44 @@ test('identifies a Z segment as a local extension without guessing its field mea
   await expect(page.locator('.field-detail')).toContainText('meaning depends on the sending implementation');
 });
 
+test('loads a local HL7 file into the editor and parses it in the browser', async ({ page }) => {
+  const externalRequests: string[] = [];
+  page.on('request', request => {
+    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') externalRequests.push(request.url());
+  });
+  const message = [
+    'MSH|^~\\&|APP|FAC|REC|RFAC|20250101010101||ADT^A01|CTRL1|P|2.5',
+    'PID|1||MRN42^^^FAC^MR||Doe^Jane||19800101|F',
+    'PV1|1|I|4W^412^A'
+  ].join('\r');
+
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Load .hl7' }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({
+    name: 'sample.hl7',
+    mimeType: 'text/plain',
+    buffer: Buffer.from(message)
+  });
+
+  await expect(page.getByRole('textbox', { name: 'HL7 v2 message input' })).toHaveValue(message.replaceAll('\r', '\n'));
+  await expect(page.locator('.message-pill')).toHaveText('ADT ^ A01');
+  await expect(page.locator('#announcements')).toContainText('Loaded sample.hl7');
+  await expect(page.locator('.validation')).toContainText('No basic structure issues found.');
+  expect(externalRequests).toEqual([]);
+});
+
+test('rejects local files above the file size limit without replacing the editor content', async ({ page }) => {
+  await page.locator('#message-file').setInputFiles({
+    name: 'oversized.hl7',
+    mimeType: 'text/plain',
+    buffer: Buffer.alloc(2 * 1024 * 1024 + 1)
+  });
+
+  await expect(page.locator('#file-error')).toHaveText('This file exceeds the 2 MB local file limit.');
+  await expect(page.getByRole('textbox', { name: 'HL7 v2 message input' })).toHaveValue(/ADT\^A01/);
+});
+
 test('preserves keyboard focus while expanding segments and field explanations', async ({ page }) => {
   const segment = page.locator('[data-segment="1"]');
   await segment.focus();

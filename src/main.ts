@@ -14,6 +14,7 @@ const icons = {
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const announcements = document.querySelector<HTMLDivElement>('#announcements')!;
+const MAX_FILE_BYTES = 2 * 1024 * 1024;
 let selectedExample = 0;
 let input = examples[0].message;
 let parsed = parseMessage(input);
@@ -22,6 +23,7 @@ let expandedSegments: Set<number> | null = null;
 let expandedFields = new Set<string>();
 let hasPendingEdits = false;
 let copyMessage = '';
+let fileError = '';
 
 type FocusTarget =
   | { id: string }
@@ -178,7 +180,8 @@ function render() {
       <section class="examples" aria-labelledby="examples-heading"><h2 class="section-kicker" id="examples-heading">START WITH AN EXAMPLE</h2><div class="example-row">${examples.map((example, index) => `<button class="example-card ${selectedExample === index ? 'selected' : ''}" data-example="${index}" aria-pressed="${selectedExample === index}"><span class="example-type">${escapeHtml(example.type)}</span><span class="example-name">${escapeHtml(example.name)} <span class="arrow" aria-hidden="true">↗</span></span><span class="example-description">${escapeHtml(example.description)}</span></button>`).join('')}</div></section>
       <section class="workbench" aria-label="HL7 message workspace">
         <div class="panel editor-panel">
-          <div class="panel-heading"><div><span class="panel-icon editor-icon">${icons.code}</span><span class="panel-title">Message input</span><span class="panel-subtitle">HL7 v2</span></div><button class="text-button" id="clear">Clear</button></div>
+          <div class="panel-heading"><div><span class="panel-icon editor-icon">${icons.code}</span><span class="panel-title">Message input</span><span class="panel-subtitle">HL7 v2</span></div><div class="editor-actions"><input id="message-file" class="file-input" type="file" accept=".hl7,.txt,text/plain" aria-label="Choose an HL7 v2 file"><button type="button" class="text-button" id="load-file">Load .hl7</button><button type="button" class="text-button" id="clear">Clear</button></div></div>
+          <div id="file-error" class="file-error" role="alert" ${fileError ? '' : 'hidden'}>${escapeHtml(fileError)}</div>
           <div class="editor-wrap"><div class="line-numbers" aria-hidden="true">${renderLineNumbers(input)}</div><textarea id="message" spellcheck="false" aria-label="HL7 v2 message input" aria-describedby="input-summary">${escapeHtml(input)}</textarea></div>
           <div class="editor-footer"><span><span class="live-dot"></span> Runs locally in your browser</span><span id="input-summary" title="Maximum ${MAX_MESSAGE_CHARACTERS.toLocaleString('en-US')} characters or ${MAX_SEGMENTS.toLocaleString('en-US')} segments">${inputSummary}</span></div>
           <button class="parse-button" id="parse">${icons.parse}<span>Parse message</span><kbd>Ctrl / ⌘ ↵</kbd></button>
@@ -200,8 +203,43 @@ function render() {
   restoreFocusTarget(focusTarget);
 
   const textarea = app.querySelector<HTMLTextAreaElement>('#message')!;
+  const fileInput = app.querySelector<HTMLInputElement>('#message-file')!;
+  app.querySelector<HTMLButtonElement>('#load-file')!.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_FILE_BYTES) {
+      fileError = 'This file exceeds the 2 MB local file limit.';
+      render();
+      announcements.textContent = fileError;
+      return;
+    }
+
+    try {
+      input = await file.text();
+      fileInput.value = '';
+      fileError = '';
+      selectedExample = -1;
+      parsed = parseMessage(input);
+      issues = validateMessage(input, parsed);
+      expandedSegments = null;
+      expandedFields.clear();
+      hasPendingEdits = false;
+      render();
+      announceOutcome(`Loaded ${file.name}`);
+    } catch {
+      fileInput.value = '';
+      fileError = 'The selected file could not be read as text.';
+      render();
+      announcements.textContent = fileError;
+    }
+  });
+
   textarea.addEventListener('input', () => {
     input = textarea.value;
+    fileError = '';
+    app.querySelector<HTMLElement>('#file-error')!.hidden = true;
     hasPendingEdits = true;
     selectedExample = -1;
     app.querySelectorAll<HTMLButtonElement>('[data-example]').forEach(button => {
@@ -219,6 +257,7 @@ function render() {
 
   app.querySelectorAll<HTMLButtonElement>('[data-example]').forEach(button => button.addEventListener('click', () => {
     selectedExample = Number(button.dataset.example);
+    fileError = '';
     input = examples[selectedExample].message;
     parsed = parseMessage(input);
     issues = validateMessage(input, parsed);
@@ -231,6 +270,7 @@ function render() {
 
   app.querySelector('#parse')!.addEventListener('click', () => {
     input = textarea.value;
+    fileError = '';
     parsed = parseMessage(input);
     issues = validateMessage(input, parsed);
     expandedSegments = null;
@@ -242,6 +282,7 @@ function render() {
 
   app.querySelector('#clear')!.addEventListener('click', () => {
     input = '';
+    fileError = '';
     parsed = parseMessage(input);
     issues = validateMessage(input, parsed);
     selectedExample = -1;

@@ -31,7 +31,9 @@ HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates a 
 - Explains common fields across MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, FT1, IN1, GP1, PR1, and MSA.
 - Flags a missing or malformed MSH, invalid segment separators, mixed line endings, and blank fields used by its basic checks.
 - Includes ADT^A01, ORU^R01, ACK, and a synthetic DFT^P03 financial transaction.
+- Opens `.hl7` and `.txt` files locally in the browser. File contents are not uploaded.
 - Keeps parsing and fonts in the browser. Message content is not sent to a service.
+- Limits input to 512,000 characters and imported files to 2 MB.
 
 ## 🚀 Run it locally
 
@@ -53,7 +55,7 @@ npm run test:ui
 npm run build
 ```
 
-The parser tests cover delimiter handling, line endings, nested field structure, limits, validation locations, and built-in examples. Browser tests cover parsing, field guidance, keyboard focus, accessibility announcements, and local Z segments. Pull requests run both test suites and a production build. The Pages workflow runs the same checks before deployment.
+The parser tests cover delimiter handling, line endings, nested field structure, limits, validation locations, and built-in examples. Browser tests cover parsing, local file loading, field guidance, keyboard focus, accessibility announcements, and local Z segments. Pull requests run both test suites and a production build. The Pages workflow runs the same checks before deployment.
 
 ## 🌳 Architecture
 
@@ -96,7 +98,7 @@ The latest tag is `v0.1.0`, a preview release. Changes on `main` after that tag 
 
 This is an educational inspector with basic structural checks. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. An empty PID-3 warning is a structural hint, not a profile-conformance result. The built-in field guide covers common v2.5 use; field meaning can vary by version and message profile. `Z` segments are local extensions, so their field meanings depend on the sending implementation.
 
-Input is limited to 512,000 characters and 500 non-empty segments. Examples contain synthetic data. **Do not include real patient information in public bug reports or feature requests.** Do not use this tool for clinical decisions.
+Input is limited to 512,000 characters and 500 non-empty segments; imported files are capped at 2 MB. Examples contain synthetic data. **Do not include real patient information in public bug reports or feature requests.** Do not use this tool for clinical decisions.
 
 ## 📚 HL7 references
 
