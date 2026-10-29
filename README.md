@@ -10,14 +10,14 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-1E7D47.svg"></a>
 </p>
 
-Inspect HL7 v2 messages in the browser, trace each field to its segment, and review structural warnings without sending data to a remote service.
+Inspect HL7 v2 messages in the browser and trace each field back to its segment.
 
 Built for HL7 integrators, interoperability analysts, QA teams, and developers debugging message flow.
 
 <p>
-  <a href="https://modavidc.github.io/hl7-playground/">🚀 Open the live demo</a> ·
-  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml">🐛 Report a bug</a> ·
-  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml">💡 Request a feature</a>
+  <a href="https://modavidc.github.io/hl7-playground/">Open the live demo</a> ·
+  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml">Report a bug</a> ·
+  <a href="https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml">Request a feature</a>
 </p>
 
 <p align="center">
