@@ -12,6 +12,7 @@ This project follows semantic versioning. Releases below `1.0.0` are previews an
 - Clarify that the PID-3 notice is a basic structural hint, identify local Z segments, and run browser checks before Pages deployment.
 - Refresh the README screenshot for the financial transaction example.
 - Rework the README with an architecture tree and add bug report and feature request forms with synthetic-data guidance.
+- Center the README badges and show the main technologies, CI, Pages deployment, latest tag, and license.
 
 ## [0.1.0] - 2026-10-28
 
