@@ -120,9 +120,14 @@ The latest tag is `v0.1.0`, a preview release. Changes on `main` after that tag 
 
 ## ⚠️ Scope and limits
 
-This is an educational inspector with basic structural checks. It does not validate an implementation guide or certify conformance, decode HL7 escape sequences, parse MLLP framing, or replace a production interface engine. An empty PID-3 warning is a structural hint, not a profile-conformance result. The built-in field guide covers common v2.5 use; field meaning can vary by version and message profile. `Z` segments are local extensions, so their field meanings depend on the sending implementation.
-
-Input is limited to 512,000 characters and 500 non-empty segments; imported files are capped at 2 MB. Examples contain synthetic data. **Do not include real patient information in public bug reports or feature requests.** Do not use this tool for clinical decisions.
+- **Validation scope:** Basic structural checks only. The tool does not validate implementation guides or certify conformance.
+- **Parsing limits:** HL7 escape sequences are not decoded, MLLP framing is not parsed, and the tool does not replace a production interface engine.
+- **Field guidance:** Definitions cover common v2.5 usage. Field meaning can vary by version and message profile. `Z` segments are local extensions whose meaning depends on the sending implementation.
+- **PID-3 notice:** An empty PID-3 warning is a structural hint, not a profile-conformance result.
+- **Input limits:** 512,000 characters or 500 non-empty segments per message; imported files are capped at 2 MB.
+- **Example data:** Built-in messages contain synthetic data.
+- **Sensitive data:** Do not include real patient information in public bug reports or feature requests.
+- **Clinical use:** Do not use this tool for clinical decisions.
 
 ## 📚 HL7 references
 
