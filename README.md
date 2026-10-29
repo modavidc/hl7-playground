@@ -30,6 +30,7 @@ HL7 v2 messages are compact and hard to scan by eye. HL7 Playground separates a 
 - Parses delimiters declared in MSH and preserves fields, repetitions, components, and subcomponents.
 - Explains common fields across MSH, EVN, PID, PV1, AL1, DG1, ORC, OBR, OBX, FT1, IN1, GP1, PR1, and MSA.
 - Flags a missing or malformed MSH, invalid segment separators, mixed line endings, and blank fields used by its basic checks.
+- Jumps from a validation finding to the matching segment or field in the parsed tree when a location is available.
 - Includes ADT^A01, ORU^R01, ACK, and a synthetic DFT^P03 financial transaction.
 - Opens `.hl7` and `.txt` files locally in the browser. File contents are not uploaded.
 - Keeps parsing and fonts in the browser. Message content is not sent to a service.

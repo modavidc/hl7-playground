@@ -146,6 +146,27 @@ function renderSegment(segment: Hl7Message['segments'][number]): string {
   </div>`;
 }
 
+function getIssueTarget(location?: string): { segmentIndex: number; fieldKey?: string } | null {
+  if (!location) return null;
+
+  const fieldMatch = location.match(/^([A-Z0-9]{3})-(\d+)/);
+  if (fieldMatch) {
+    const [, segmentName, fieldNumber] = fieldMatch;
+    const segment = parsed.segments.find(item => item.name === segmentName);
+    if (segment) return { segmentIndex: segment.index, fieldKey: `${segmentName}-${fieldNumber}` };
+  }
+
+  const lineMatch = location.match(/line (\d+)/);
+  if (lineMatch) {
+    const segment = parsed.segments.find(item => item.lineNumber === Number(lineMatch[1]));
+    if (segment) return { segmentIndex: segment.index };
+  }
+
+  const segmentName = location.match(/^([A-Z0-9]{3})/)?.[1];
+  const segment = parsed.segments.find(item => item.name === segmentName);
+  return segment ? { segmentIndex: segment.index } : null;
+}
+
 function render() {
   const focusTarget = captureFocusTarget();
   const messageType = parsed.segments[0]?.fields.find(field => field.index === 9)?.value
@@ -193,7 +214,11 @@ function render() {
           <div class="tree" id="tree">${parsed.segments.length ? parsed.segments.map(renderSegment).join('') : `<div class="empty-state">${emptyState}</div>`}</div>
           <section class="validation" aria-labelledby="validation-heading">
             <div class="validation-title" id="validation-heading"><span class="panel-icon validation-icon">${icons.shield}</span><span>Validation</span><span class="validation-count ${errorCount ? 'has-error' : warningCount ? 'has-warning' : ''}">${validationLabel}</span></div>
-            ${issues.length ? issues.map(item => `<div class="issue ${item.severity}"><span class="issue-symbol" aria-hidden="true">${item.severity === 'error' ? '!' : '△'}</span><div><strong>${escapeHtml(item.title)}${item.location ? ` <code>${escapeHtml(item.location)}</code>` : ''}</strong><span>${escapeHtml(item.detail)}</span></div></div>`).join('') : '<div class="success-message"><span aria-hidden="true">✓</span> No basic structure issues found.</div>'}
+            ${issues.length ? issues.map(item => {
+              const target = getIssueTarget(item.location);
+              const fieldAttribute = target?.fieldKey ? ` data-issue-field="${escapeHtml(target.fieldKey)}"` : '';
+              return `<div class="issue ${item.severity}"><span class="issue-symbol" aria-hidden="true">${item.severity === 'error' ? '!' : '△'}</span><div class="issue-content"><strong>${escapeHtml(item.title)}${item.location ? ` <code>${escapeHtml(item.location)}</code>` : ''}</strong><span>${escapeHtml(item.detail)}</span>${target ? `<button class="issue-jump" type="button" data-issue-segment="${target.segmentIndex}"${fieldAttribute}>View in tree</button>` : ''}</div></div>`;
+            }).join('') : '<div class="success-message"><span aria-hidden="true">✓</span> No basic structure issues found.</div>'}
           </section>
         </div>
       </section>
@@ -311,6 +336,19 @@ function render() {
     if (expandedFields.has(key)) expandedFields.delete(key);
     else expandedFields.add(key);
     render();
+  }));
+
+  app.querySelectorAll<HTMLButtonElement>('[data-issue-segment]').forEach(button => button.addEventListener('click', () => {
+    const segmentIndex = Number(button.dataset.issueSegment);
+    if (expandedSegments !== null) expandedSegments.add(segmentIndex);
+    if (button.dataset.issueField) expandedFields.add(button.dataset.issueField);
+    render();
+    let target = button.dataset.issueField
+      ? app.querySelector<HTMLElement>(`[data-field="${button.dataset.issueField}"]`)
+      : app.querySelector<HTMLElement>(`[data-segment="${segmentIndex}"]`);
+    target ??= app.querySelector<HTMLElement>(`[data-segment="${segmentIndex}"]`);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.focus({ preventScroll: true });
   }));
 
   app.querySelector('#copy')!.addEventListener('click', async () => {

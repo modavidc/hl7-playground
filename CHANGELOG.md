@@ -14,6 +14,7 @@ This project follows semantic versioning. Releases below `1.0.0` are previews an
 - Rework the README with an architecture tree and add bug report and feature request forms with synthetic-data guidance.
 - Center the README badges and show the main technologies, CI, Pages deployment, latest tag, and license.
 - Add local `.hl7` and `.txt` file loading with a 2 MB read limit and browser coverage.
+- Link validation findings to their segment or field in the parsed tree.
 
 ## [0.1.0] - 2026-10-28
 

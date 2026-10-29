@@ -263,9 +263,11 @@ main { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 .issue.warning { background: var(--warning-soft); }
 .issue-symbol { color: var(--danger); font-size: 14px; line-height: 1.5; }
 .issue.warning .issue-symbol { color: var(--warning); }
-.issue div { display: flex; flex-direction: column; gap: 2px; }
+.issue-content { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 3px; }
 .issue strong { color: var(--fg); font-size: 14px; font-weight: 600; }
 .issue span:not(.issue-symbol) { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.issue-jump { margin-top: 3px; padding: 2px 0; border: 0; background: transparent; color: var(--accent-ink); font: 600 11px "Schibsted Grotesk", sans-serif; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.issue-jump:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .success-message { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
 .success-message span { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent-ink); }
 .empty-state { padding: 36px 14px; color: var(--muted); font-size: 14px; text-align: center; }
