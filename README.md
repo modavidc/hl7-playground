@@ -10,11 +10,13 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-1E7D47.svg"></a>
 </p>
 
-HL7 Playground is a browser-based HL7 v2 message inspector. Paste or open a message to explore segments, fields, and components, then review basic structural warnings.
+HL7 Playground is a browser-based inspector for HL7 v2 messages.
 
-Built for HL7 v2 integrators, interoperability analysts, QA teams, and developers. Messages are parsed locally in your browser.
+Built for HL7 integrators, interoperability teams, QA engineers, and developers debugging message flows.
 
-**Current version:** `v0.1.0` preview. Changes on `main` after this tag are unreleased.
+Trace each value to its segment and review structural warnings without sending message data to a server.
+
+**Status:** Preview tool for structural inspection and learning. Latest tag: `v0.1.0`; changes on `main` after this tag are unreleased.
 
 <p>
   <a href="https://modavidc.github.io/hl7-playground/">Open the live demo</a> ·
@@ -35,7 +37,9 @@ Built for HL7 v2 integrators, interoperability analysts, QA teams, and developer
 - Includes synthetic ADT^A01, ORU^R01, ACK, and DFT^P03 examples.
 - Opens `.hl7` and `.txt` files locally; message content is not sent to a service.
 
-## Quick start
+## Quick start in 30 seconds
+
+Paste an HL7 message, select **Parse message**, and explore the message tree.
 
 1. [Open the live demo](https://modavidc.github.io/hl7-playground/).
 2. Paste this synthetic ADT message or choose the built-in **ADT^A01** example, then select **Parse message**.
@@ -49,6 +53,8 @@ PV1|1|O
 3. Expand **PID** to inspect its fields. Select a field name for its explanation; if validation finds an issue, choose **View in tree** to jump to its location.
 
 ### Run locally
+
+No backend, token, or environment variables are required for local use.
 
 ```sh
 git clone https://github.com/modavidc/hl7-playground.git
@@ -77,7 +83,7 @@ npm run test:ui
 npm run build
 ```
 
-Parser tests cover delimiter handling, nested fields, limits, validation, and examples. Browser tests cover parsing, local file loading, field guidance, keyboard interaction, and local Z segments. GitHub Actions runs both suites and a production build for pull requests and Pages deployments.
+Parser tests cover delimiters, nested fields, limits, validation, and examples. Browser checks cover parsing, local files, field guidance, keyboard interaction, and Z segments. On every pull request and before Pages deployment, GitHub Actions runs both suites and a production build.
 
 ## Architecture
 
@@ -114,9 +120,9 @@ hl7-playground/
 
 ## Scope and limits
 
-- **Supported:** Browser-based HL7 v2 parsing, expandable message structure, common field explanations, and basic structural checks.
-- **Not supported:** Implementation-guide or profile conformance, escape-sequence decoding, MLLP framing, or production interface-engine use.
-- **Field coverage:** Common v2.5 usage. Field meaning may vary by version and profile; `Z` segments are defined by the sending implementation. An empty PID-3 notice is only a structural hint.
+- **What it does:** Parses HL7 v2 messages, renders their structure, explains common fields, and reports basic structural checks.
+- **What it does not do:** Validate implementation guides or profiles, certify conformance, decode escape sequences, parse MLLP framing, or replace a production interface engine.
+- **Field guidance:** Common v2.5 usage only. Meanings may vary by version or profile; `Z` segments are implementation-defined. An empty PID-3 warning is a structural hint.
 - **Input limits:** 512,000 characters and 500 non-empty segments per message; imported files are capped at 2 MB.
 - **Data and use:** Examples are synthetic. Do not include real patient information in public issues or use the tool for clinical decisions.
 
@@ -131,7 +137,7 @@ These references provide additional context for common segment fields:
 
 ## Feedback and contributions
 
-Use the issue forms to [report a bug](https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml) or [request a feature](https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml). Include synthetic messages only.
+Contributions are welcome for parser edge cases, synthetic examples, validation logic, and usability improvements. Use the issue forms to [report a bug](https://github.com/modavidc/hl7-playground/issues/new?template=bug_report.yml) or [request a feature](https://github.com/modavidc/hl7-playground/issues/new?template=feature_request.yml). Include synthetic messages only.
 
 ## License
 
